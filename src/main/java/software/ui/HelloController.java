@@ -1,4 +1,4 @@
-package org.example.hbv4013h.ui;
+package software.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
