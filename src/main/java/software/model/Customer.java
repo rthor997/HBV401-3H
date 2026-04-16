@@ -1,4 +1,4 @@
-package org.example.hbv4013h.model;
+package software.model;
 
 import java.util.List;
 
