@@ -27,6 +27,10 @@ public class Customer {
         }
     }
 
+    public void addBooking(Booking booking) {
+        currentBookings.add(booking);
+    }
+
     public List<Booking> getPreviousBookings() {
         return previousBookings;
     }
