@@ -12,7 +12,7 @@ public class BookingController {
     private CustomerDB customerDB;
     private HotelDB hotelDB;
 
-    public BookingController(BookingDB bDB, CustomerDB cDB, HotelDB hdb) {
+    public BookingController(BookingDB bDB, CustomerDB cDB, HotelDB hDB) {
         this.bookingDB = bDB;
         this.customerDB = cDB;
         this.hotelDB = hDB;
