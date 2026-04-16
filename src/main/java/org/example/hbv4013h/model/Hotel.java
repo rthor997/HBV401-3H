@@ -3,7 +3,7 @@ package org.example.hbv4013h.model;
 import java.util.List;
 
 public class Hotel {
-    private String hotelID;
+    private String hotel_ID;
     private final String name;
     private final String location;
     private Boolean allowsPets;
