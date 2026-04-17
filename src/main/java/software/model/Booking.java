@@ -37,7 +37,7 @@ public class Booking {
     public Customer getCustomer() {
         return customer;
     }
-    public Room getroom() {
+    public Room getRoom() {
         return room;
     }
     public LocalDate getCheckInDate() {
@@ -55,6 +55,4 @@ public class Booking {
     public double getPrice() {
         return price;
     }
-
-
 }

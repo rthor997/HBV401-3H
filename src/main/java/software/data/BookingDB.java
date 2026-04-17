@@ -1,6 +1,8 @@
 package software.data;
 
 import software.model.Booking;
+import software.model.Customer;
+import software.model.Room;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,8 +21,8 @@ public class BookingDB {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, booking.getBookingId());
-            stmt.setString(2, booking.getCustomer().getCustomerId());
-            stmt.setString(3, booking.getroom().getRoomId());
+            stmt.setString(2, booking.getCustomer().getCustomerID());
+            stmt.setString(3, booking.getRoom().getRoomId());
             stmt.setString(4, booking.getCheckInDate().toString());
             stmt.setString(5, booking.getCheckOutDate().toString());
             stmt.setInt(6, booking.getGuests());
@@ -88,14 +90,17 @@ public class BookingDB {
 
     private Booking mapResultSetToBooking(ResultSet rs) throws Exception {
         String bookingId = rs.getString("bookingId");
-        String customer = rs.getString("customerId");
-        String room = rs.getString("roomId");
+        String customerId = rs.getString("customerId");
+        String roomId = rs.getString("roomId");
 
         LocalDate checkIn = LocalDate.parse(rs.getString("checkInDate"));
         LocalDate checkOut = LocalDate.parse(rs.getString("checkOutDate"));
 
         int guests = rs.getInt("guests");
-        boolean lateCheckout = rs.getBoolean("lateCheckout");
+        boolean lateCheckout = rs.getInt("lateCheckout") == 1;
+
+        Customer customer = customerDB.getCustomerById(customerId);
+        Room room = roomDB.getRoomById(roomId);
 
         return new Booking(
                 bookingId,
