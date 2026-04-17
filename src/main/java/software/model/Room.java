@@ -53,5 +53,7 @@ public class Room {
         }
     }
 
+    public String getRoomId() {
+    }
 }
 
