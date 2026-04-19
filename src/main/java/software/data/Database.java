@@ -1,5 +1,6 @@
 package software.data;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -8,6 +9,7 @@ public class Database {
     private static final String URL = "jdbc:sqlite:data.db";
 
     public static Connection connect() throws Exception {
+        Class.forName("org.sqlite.JDBC");
         return DriverManager.getConnection(URL);
     }
 
@@ -15,57 +17,25 @@ public class Database {
         try (Connection conn = connect();
              Statement stmt = conn.createStatement()) {
 
-            // 1. Búa til töflur
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS Customer (
-                    customerId TEXT PRIMARY KEY,
-                    name TEXT,
-                    email TEXT
-                );
-            """);
+            // lesa schema.sql
+            String schema = loadSQL("schema.sql");
+            stmt.execute(schema);
 
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS Room (
-                    roomId TEXT PRIMARY KEY,
-                    roomNumber INTEGER,
-                    pricePerDay REAL
-                );
-            """);
+            // lesa insert.sql
+            String insert = loadSQL("insert.sql");
+            stmt.execute(insert);
 
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS Booking (
-                    bookingId TEXT PRIMARY KEY,
-                    customerId TEXT,
-                    roomId TEXT,
-                    checkInDate TEXT,
-                    checkOutDate TEXT,
-                    guests INTEGER,
-                    lateCheckout INTEGER,
-                    price REAL,
-                    FOREIGN KEY (customerId) REFERENCES Customer(customerId),
-                    FOREIGN KEY (roomId) REFERENCES Room(roomId)
-                );
-            """);
-
-            // 2. Setja test gögn
-            stmt.execute("""
-                INSERT OR IGNORE INTO Customer (customerId, name, email)
-                VALUES 
-                ('c1', 'Jon', 'jon@email.com'),
-                ('c2', 'Anna', 'anna@email.com');
-            """);
-
-            stmt.execute("""
-                INSERT OR IGNORE INTO Room (roomId, roomNumber, pricePerDay)
-                VALUES 
-                ('r1', 101, 15000),
-                ('r2', 102, 20000);
-            """);
-
-            System.out.println("Database initialized!");
+            System.out.println("Database initialized from SQL files!");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String loadSQL(String fileName) throws Exception {
+        try (var input = Database.class.getClassLoader().getResourceAsStream(fileName)) {
+            return new String(input.readAllBytes());
+        }
+
     }
 }
