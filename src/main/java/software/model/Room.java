@@ -1,59 +1,43 @@
 package software.model;
 
-import java.util.List;
-
 public class Room {
-    private String roomID;
-    private String hotel_ID;
-    private Integer roomNumber;
-    private Boolean isBooked;
+    private String roomId;
+    private String hotelName;
+    private int roomNumber;
+    private boolean isBooked;
     private String roomType;
-    private Boolean hasBalcony;
-    private Integer numberOfBeds;
-    private Boolean hasKitchen;
-    private List<String> images;
-    public Room(String hotel_ID, Integer roomNumber, Boolean isBooked, String roomType, Boolean hasBalcony, Integer numberOfBeds, Boolean hasKitchen, List<String> images){
-        this.hotel_ID = hotel_ID;
+    private boolean hasBalcony;
+    private int numberOfBeds;
+    private boolean hasKitchen;
+    private double pricePerDay;
+
+    public Room(String roomId, String hotelName, int roomNumber, boolean isBooked,
+                String roomType, boolean hasBalcony, int numberOfBeds,
+                boolean hasKitchen, double pricePerDay) {
+        this.roomId = roomId;
+        this.hotelName = hotelName;
         this.roomNumber = roomNumber;
         this.isBooked = isBooked;
         this.roomType = roomType;
         this.hasBalcony = hasBalcony;
         this.numberOfBeds = numberOfBeds;
         this.hasKitchen = hasKitchen;
-        this.images = images;
-    }
-    public Integer getRoomNumber(){
-        return roomNumber;
-    }
-    public Boolean getIsBooked(){
-        return isBooked;
-    }
-    public String getRoomType(){
-        return roomType;
-    }
-    public Boolean getHasBalcony(){
-        return hasBalcony;
-    }
-    public Integer getNumberOfBeds(){
-        return numberOfBeds;
-    }
-    public Boolean getHasKitchen(){
-        return hasKitchen;
-    }
-    public List<String> getImages(){
-        return images;
-    }
-    public Boolean bookRoom(){
-        if (!isBooked){
-            isBooked = true;
-            return true;
-        }
-        else {
-            return false;
-        }
+        this.pricePerDay = pricePerDay;
     }
 
-    public String getRoomId() {
+    public boolean bookRoom() {
+        if (isBooked) return false;
+        isBooked = true;
+        return true;
     }
+
+    public String getRoomId() { return roomId; }
+    public String getHotelName() { return hotelName; }
+    public int getRoomNumber() { return roomNumber; }
+    public boolean getIsBooked() { return isBooked; }
+    public String getRoomType() { return roomType; }
+    public boolean getHasBalcony() { return hasBalcony; }
+    public int getNumberOfBeds() { return numberOfBeds; }
+    public boolean getHasKitchen() { return hasKitchen; }
+    public double getPricePerDay() { return pricePerDay; }
 }
-

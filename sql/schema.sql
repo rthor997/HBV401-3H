@@ -4,9 +4,15 @@ CREATE TABLE Customer (
     email TEXT
 );
 
-CREATE TABLE Room (
+CREATE TABLE IF NOT EXISTS Room (
     roomId TEXT PRIMARY KEY,
+    hotelName TEXT,
     roomNumber INTEGER,
+    isBooked INTEGER,
+    roomType TEXT,
+    hasBalcony INTEGER,
+    numberOfBeds INTEGER,
+    hasKitchen INTEGER,
     pricePerDay REAL
 );
 
