@@ -1,5 +1,6 @@
 package org.example.hbv4013h.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Customer {
@@ -9,9 +10,12 @@ public class Customer {
     private List<Booking> currentBookings;
     private List<Booking> previousBookings;
 
-    public Customer(String name, String email) {
+    public Customer(String id, String name, String email) {
+        this.customerID = id;
         this.name = name;
         this.email = email;
+        this.currentBookings = new ArrayList<>();
+        this.previousBookings = new ArrayList<>();
     }
 
     public void moveBookingToHistory(Booking booking) throws NullPointerException {
