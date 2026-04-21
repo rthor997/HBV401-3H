@@ -5,7 +5,6 @@ import software.model.Room;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +32,10 @@ public class RoomDB {
     }
 
     public List<Room> getRoomsForHotel(String hotelName, Integer minimumBeds) {
+        if (minimumBeds == null) {
+            return getRoomsForHotel(hotelName);
+        }
+
         String sql = "SELECT * FROM Room WHERE lower(hotelName) = lower(?) AND numberOfBeds >= ?";
         List<Room> rooms = new ArrayList<>();
 
@@ -76,6 +79,10 @@ public class RoomDB {
     }
 
     public List<Room> getAvailableRoomsForHotel(String hotelName, Integer minimumBeds) {
+        if (minimumBeds == null) {
+            return getAvailableRoomsForHotel(hotelName);
+        }
+
         String sql = "SELECT * FROM Room WHERE lower(hotelName) = lower(?) AND isBooked = 0 AND numberOfBeds >= ?";
         List<Room> rooms = new ArrayList<>();
 
@@ -172,6 +179,10 @@ public class RoomDB {
     }
 
     public boolean hotelHasRoomWithMinimumBeds(String hotelName, Integer minimumBeds) {
+        if (minimumBeds == null) {
+            return !getRoomsForHotel(hotelName).isEmpty();
+        }
+
         String sql = "SELECT COUNT(*) FROM Room WHERE lower(hotelName) = lower(?) AND numberOfBeds >= ?";
 
         try (Connection conn = Database.connect();
@@ -191,6 +202,10 @@ public class RoomDB {
     }
 
     public boolean hotelHasAvailableRoomWithMinimumBeds(String hotelName, Integer minimumBeds) {
+        if (minimumBeds == null) {
+            return !getAvailableRoomsForHotel(hotelName).isEmpty();
+        }
+
         String sql = "SELECT COUNT(*) FROM Room WHERE lower(hotelName) = lower(?) AND isBooked = 0 AND numberOfBeds >= ?";
 
         try (Connection conn = Database.connect();

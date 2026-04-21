@@ -3,11 +3,15 @@ package software.data;
 import software.model.Hotel;
 import software.model.Room;
 
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HotelDB {
-    private final List<Hotel> hotels;
     private final RoomDB roomDB;
 
     public HotelDB() {
@@ -16,43 +20,88 @@ public class HotelDB {
 
     public HotelDB(RoomDB roomDB) {
         this.roomDB = roomDB;
-        this.hotels = seedHotels();
     }
 
     public List<Hotel> getAllHotels() {
-        return new ArrayList<>(hotels);
+        String sql = "SELECT * FROM Hotel";
+        List<Hotel> hotels = new ArrayList<>();
+
+        try (Connection conn = Database.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                hotels.add(mapResultSetToHotel(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return hotels;
     }
 
     public List<Hotel> searchHotelsByLocation(String location) {
-        List<Hotel> matchingHotels = new ArrayList<>();
-
-        for (Hotel hotel : hotels) {
-            if (locationMatches(hotel, location)) {
-                matchingHotels.add(hotel);
-            }
+        String normalizedLocation = safeValue(location);
+        if (normalizedLocation.isEmpty()) {
+            return getAllHotels();
         }
 
-        return matchingHotels;
+        String sql = "SELECT * FROM Hotel WHERE lower(location) LIKE lower(?)";
+        List<Hotel> hotels = new ArrayList<>();
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + normalizedLocation + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                hotels.add(mapResultSetToHotel(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return hotels;
     }
 
     public List<Hotel> searchHotelsByLocationAndPets(String location, Boolean petFriendly) {
-        List<Hotel> matchingHotels = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM Hotel WHERE 1 = 1");
+        List<Object> parameters = new ArrayList<>();
+        String normalizedLocation = safeValue(location);
 
-        for (Hotel hotel : searchHotelsByLocation(location)) {
-            if (petFriendly == null || hotel.getAllowPets().equals(petFriendly)) {
-                matchingHotels.add(hotel);
-            }
+        if (!normalizedLocation.isEmpty()) {
+            sql.append(" AND lower(location) LIKE lower(?)");
+            parameters.add("%" + normalizedLocation + "%");
         }
 
-        return matchingHotels;
+        if (petFriendly != null) {
+            sql.append(" AND allowsPets = ?");
+            parameters.add(petFriendly ? 1 : 0);
+        }
+
+        return runHotelQuery(sql.toString(), parameters);
     }
 
     public Hotel getHotelByName(String hotelName) {
-        for (Hotel hotel : hotels) {
-            if (hotel.getHotelName().equalsIgnoreCase(safeValue(hotelName))) {
-                return hotel;
+        String sql = "SELECT * FROM Hotel WHERE lower(name) = lower(?)";
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, safeValue(hotelName));
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToHotel(rs);
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return null;
     }
 
@@ -69,6 +118,7 @@ public class HotelDB {
         if (onlyAvailableRooms) {
             return roomDB.hotelHasAvailableRoomWithMinimumBeds(hotelName, minimumBeds);
         }
+
         return roomDB.hotelHasRoomWithMinimumBeds(hotelName, minimumBeds);
     }
 
@@ -80,24 +130,59 @@ public class HotelDB {
         return roomDB.getRoomById(roomId);
     }
 
-    private List<Hotel> seedHotels() {
-        List<Hotel> seededHotels = new ArrayList<>();
-        seededHotels.add(new Hotel("Nordic Light Hotel", "Reykjavik", true, roomDB.getRoomsForHotel("Nordic Light Hotel")));
-        seededHotels.add(new Hotel("Harbor Stay", "Akureyri", false, roomDB.getRoomsForHotel("Harbor Stay")));
-        seededHotels.add(new Hotel("Lava Suites", "Selfoss", true, roomDB.getRoomsForHotel("Lava Suites")));
-        seededHotels.add(new Hotel("Northern Peaks Resort", "Akureyri", true, roomDB.getRoomsForHotel("Northern Peaks Resort")));
-        return seededHotels;
+    private List<Hotel> runHotelQuery(String sql, List<Object> parameters) {
+        List<Hotel> hotels = new ArrayList<>();
+
+        try (Connection conn = Database.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                hotels.add(mapResultSetToHotel(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return hotels;
     }
 
-    private boolean locationMatches(Hotel hotel, String location) {
-        String normalizedLocation = safeValue(location);
-        if (normalizedLocation.isEmpty()) {
-            return true;
-        }
-        return hotel.getHotelLocation().toLowerCase().contains(normalizedLocation.toLowerCase());
+    private Hotel mapResultSetToHotel(ResultSet rs) throws Exception {
+        String hotelId = rs.getString("hotelId");
+        String hotelName = rs.getString("name");
+        String location = rs.getString("location");
+        boolean allowsPets = rs.getInt("allowsPets") == 1;
+
+        Hotel hotel = new Hotel(
+                hotelName,
+                location,
+                allowsPets,
+                roomDB.getRoomsForHotel(hotelName)
+        );
+
+        setFieldIfPresent(hotel, "hotel_ID", hotelId);
+        setFieldIfPresent(hotel, "rooms", roomDB.getRoomsForHotel(hotelName));
+        return hotel;
     }
 
     private String safeValue(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private void setFieldIfPresent(Hotel hotel, String fieldName, Object value) {
+        try {
+            Field field = Hotel.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(hotel, value);
+        } catch (NoSuchFieldException ignored) {
+            // The current Hotel model does not expose this field.
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unable to populate Hotel field '" + fieldName + "'.", e);
+        }
     }
 }
