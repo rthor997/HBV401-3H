@@ -1,4 +1,4 @@
-package org.example.hbv4013h;
+package software;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
