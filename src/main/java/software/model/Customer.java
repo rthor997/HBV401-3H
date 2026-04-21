@@ -18,7 +18,7 @@ public class Customer {
         this.previousBookings = new ArrayList<>();
     }
 
-    public void moveBookingToHistory(Booking booking) throws NullPointerException {
+    public void moveBookingToHistory(Booking booking) {
         if (booking == null) {
             throw new IllegalArgumentException("Booking cannot be null");
         }

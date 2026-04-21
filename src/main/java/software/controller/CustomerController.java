@@ -1,12 +1,18 @@
 package software.controller;
 
-import org.example.hbv4013h.model.Booking;
-import org.example.hbv4013h.model.Customer;
+
+import software.data.CustomerDB;
+import software.model.Booking;
+import software.model.Customer;
 
 import java.util.List;
 
 public class CustomerController {
-    private Customer[] customers;
+    private final CustomerDB customerDB;
+
+    public CustomerController(CustomerDB customerDB) {
+        this.customerDB = customerDB;
+    }
 
     public void createCustomer(String customerID, String name, String email) {
 
