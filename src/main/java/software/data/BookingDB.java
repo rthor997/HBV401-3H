@@ -3,6 +3,7 @@ package software.data;
 import software.model.Booking;
 import software.model.Customer;
 import software.model.Room;
+import software.data.CustomerDB;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookingDB {
+    private CustomerDB customerDB;
+    private RoomDB roomDB;
+
+    public BookingDB(CustomerDB customerDB, RoomDB roomDB) {
+        this.customerDB = customerDB;
+        this.roomDB = roomDB;
+    }
 
     public void addBooking(Booking booking) {
         String sql = "INSERT INTO Booking VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -21,7 +29,7 @@ public class BookingDB {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, booking.getBookingId());
-            stmt.setString(2, booking.getCustomer().getCustomerID());
+            stmt.setString(2, booking.getCustomer().getCustomerId());
             stmt.setString(3, booking.getRoom().getRoomId());
             stmt.setString(4, booking.getCheckInDate().toString());
             stmt.setString(5, booking.getCheckOutDate().toString());
