@@ -13,13 +13,24 @@ public class HotelController {
     private final RoomDB roomDB;
 
     public HotelController() {
-        this.roomDB = new RoomDB();
-        this.hotelDB = new HotelDB(this.roomDB);
+        this(null, null);
     }
 
     public HotelController(HotelDB hotelDB, RoomDB roomDB) {
+        if (hotelDB == null && roomDB == null) {
+            this.roomDB = new RoomDB();
+            this.hotelDB = new HotelDB(this.roomDB);
+            return;
+        }
+
+        if (hotelDB == null) {
+            this.roomDB = roomDB;
+            this.hotelDB = new HotelDB(this.roomDB);
+            return;
+        }
+
         this.hotelDB = hotelDB;
-        this.roomDB = roomDB;
+        this.roomDB = roomDB == null ? hotelDB.getRoomDB() : roomDB;
     }
 
     public List<Hotel> getAllHotels() {

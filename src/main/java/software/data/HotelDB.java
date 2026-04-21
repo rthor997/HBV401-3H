@@ -3,6 +3,7 @@ package software.data;
 import software.model.Hotel;
 import software.model.Room;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,13 @@ public class HotelDB {
     }
 
     public List<Hotel> getAllHotels() {
-        return new ArrayList<>(hotels);
+        List<Hotel> hydratedHotels = new ArrayList<>();
+
+        for (Hotel hotel : hotels) {
+            hydratedHotels.add(hydrateHotel(hotel));
+        }
+
+        return hydratedHotels;
     }
 
     public List<Hotel> searchHotelsByLocation(String location) {
@@ -28,7 +35,7 @@ public class HotelDB {
 
         for (Hotel hotel : hotels) {
             if (locationMatches(hotel, location)) {
-                matchingHotels.add(hotel);
+                matchingHotels.add(hydrateHotel(hotel));
             }
         }
 
@@ -50,7 +57,7 @@ public class HotelDB {
     public Hotel getHotelByName(String hotelName) {
         for (Hotel hotel : hotels) {
             if (hotel.getHotelName().equalsIgnoreCase(safeValue(hotelName))) {
-                return hotel;
+                return hydrateHotel(hotel);
             }
         }
         return null;
@@ -82,10 +89,10 @@ public class HotelDB {
 
     private List<Hotel> seedHotels() {
         List<Hotel> seededHotels = new ArrayList<>();
-        seededHotels.add(new Hotel("Nordic Light Hotel", "Reykjavik", true, roomDB.getRoomsForHotel("Nordic Light Hotel")));
-        seededHotels.add(new Hotel("Harbor Stay", "Akureyri", false, roomDB.getRoomsForHotel("Harbor Stay")));
-        seededHotels.add(new Hotel("Lava Suites", "Selfoss", true, roomDB.getRoomsForHotel("Lava Suites")));
-        seededHotels.add(new Hotel("Northern Peaks Resort", "Akureyri", true, roomDB.getRoomsForHotel("Northern Peaks Resort")));
+        seededHotels.add(createHotel("Nordic Light Hotel", "Reykjavik", true));
+        seededHotels.add(createHotel("Harbor Stay", "Akureyri", false));
+        seededHotels.add(createHotel("Lava Suites", "Selfoss", true));
+        seededHotels.add(createHotel("Northern Peaks Resort", "Akureyri", true));
         return seededHotels;
     }
 
@@ -99,5 +106,42 @@ public class HotelDB {
 
     private String safeValue(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private Hotel createHotel(String hotelName, String location, Boolean allowsPets) {
+        Hotel hotel = new Hotel(
+                hotelName,
+                location,
+                allowsPets,
+                roomDB.getRoomsForHotel(hotelName)
+        );
+
+        return hydrateHotel(hotel);
+    }
+
+    private Hotel hydrateHotel(Hotel hotel) {
+        if (hotel == null) {
+            return null;
+        }
+
+        setFieldIfPresent(hotel, "hotel_ID", normalizeId(hotel.getHotelName()));
+        setFieldIfPresent(hotel, "rooms", roomDB.getRoomsForHotel(hotel.getHotelName()));
+        return hotel;
+    }
+
+    private String normalizeId(String value) {
+        return safeValue(value).toLowerCase().replace(' ', '-');
+    }
+
+    private void setFieldIfPresent(Hotel hotel, String fieldName, Object value) {
+        try {
+            Field field = Hotel.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(hotel, value);
+        } catch (NoSuchFieldException ignored) {
+            // The current Hotel model does not expose this field.
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unable to populate Hotel field '" + fieldName + "'.", e);
+        }
     }
 }
