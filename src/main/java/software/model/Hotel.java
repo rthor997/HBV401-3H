@@ -1,30 +1,52 @@
 package software.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Hotel {
-    private String hotel_ID;
-    private final String name;
-    private final String location;
-    private Boolean allowsPets;
+    private String hotelId;
+    private String name;
+    private String location;
+    private boolean allowsPets;
     private List<Room> rooms;
 
-    public Hotel(String name, String location, Boolean allowPets,List<Room> rooms){
+    public Hotel(String hotelId, String name, String location, boolean allowsPets) {
+        this.hotelId = hotelId;
         this.name = name;
         this.location = location;
-        this.allowsPets = allowPets;
+        this.allowsPets = allowsPets;
+        this.rooms = new ArrayList<>();
     }
-    public String getHotelName(){
+
+    public Hotel(String hotelId, String name, String location, boolean allowsPets, List<Room> rooms) {
+        this.hotelId = hotelId;
+        this.name = name;
+        this.location = location;
+        this.allowsPets = allowsPets;
+        this.rooms = rooms;
+    }
+
+    public String getHotelId() {
+        return hotelId;
+    }
+
+    public String getHotelName() {
         return name;
     }
-    public String getHotelLocation(){
+
+    public String getHotelLocation() {
         return location;
     }
-    public Boolean getAllowPets(){
+
+    public boolean getAllowPets() {
         return allowsPets;
     }
-    public List<Room> getRooms(){
+
+    public List<Room> getRooms() {
         return rooms;
     }
 
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
 }

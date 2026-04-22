@@ -158,16 +158,13 @@ public class HotelDB {
         String location = rs.getString("location");
         boolean allowsPets = rs.getInt("allowsPets") == 1;
 
-        Hotel hotel = new Hotel(
+        return new Hotel(
+                hotelId,
                 hotelName,
                 location,
                 allowsPets,
                 roomDB.getRoomsForHotel(hotelName)
         );
-
-        setFieldIfPresent(hotel, "hotel_ID", hotelId);
-        setFieldIfPresent(hotel, "rooms", roomDB.getRoomsForHotel(hotelName));
-        return hotel;
     }
 
     private String safeValue(String value) {
