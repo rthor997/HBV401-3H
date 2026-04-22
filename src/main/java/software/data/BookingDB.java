@@ -29,7 +29,7 @@ public class BookingDB {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, booking.getBookingId());
-            stmt.setString(2, booking.getCustomer().getCustomerId());
+            stmt.setString(2, booking.getCustomer().getCustomerID());
             stmt.setString(3, booking.getRoom().getRoomId());
             stmt.setString(4, booking.getCheckInDate().toString());
             stmt.setString(5, booking.getCheckOutDate().toString());
