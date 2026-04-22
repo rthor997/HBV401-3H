@@ -30,6 +30,18 @@ public class BookingController {
             return null;
         }
 
+        if (checkIn == null || checkOut == null) {
+            return null;
+        }
+
+        if (!checkOut.isAfter(checkIn)) {
+            return null;
+        }
+
+        if (room.getIsBooked()) {
+            return null;
+        }
+
         String bookingId = UUID.randomUUID().toString();
 
         Booking newBooking = new Booking(
@@ -47,7 +59,6 @@ public class BookingController {
 
         return newBooking;
     }
-
     public void cancelBooking(String bookingId) {
         bookingDB.cancelBooking(bookingId);
     }
